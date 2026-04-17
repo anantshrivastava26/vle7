@@ -1,20 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myapp
+  name: vle7-app
+  labels:
+    app: vle7-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: myapp
+      app: vle7-app
   template:
     metadata:
       labels:
-        app: myapp
+        app: vle7-app
     spec:
       containers:
-      - name: myapp
-        image: myapp:latest   # will be built by Jenkins
+      - name: vle7-app
+        image: vle7-app:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 5000
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vle7-app-service
+spec:
+  selector:
+    app: vle7-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: NodePort

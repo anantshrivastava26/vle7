@@ -1,0 +1,21 @@
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: vle7-alerts
+        rules:
+          - alert: PodCrashing
+            expr: rate(kube_pod_container_status_restarts_total[5m]) > 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod is crashing"
+              description: "A pod in the cluster is restarting frequently."
+          - alert: HighCPUUsage
+            expr: (sum by (instance) (rate(node_cpu_seconds_total{mode!="idle"}[5m])) / sum by (instance) (node_cpu_seconds_total{mode!="idle"})) * 100 > 80
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High CPU usage detected"
+              description: "CPU usage is above 80%."

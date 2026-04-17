@@ -1,0 +1,4 @@
+Assignment: VLE-7 Full DevOps Monitoring 
+Instance Name: vle7-monitoring-node
+Public IP: [100.31.123.76]
+Key Tools: Docker, Jenkins, K8s, Prometheus, Grafana
