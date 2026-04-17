@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out code from GitHub...'
-                git branch: 'main', url: 'https://github.com/YashK3086/DevOps-Monitoring-System.git'
+                git branch: 'main', url: 'https://github.com/anantshrivastava26/vle7.git'
             }
         }
         
