@@ -13,7 +13,7 @@ pipeline {
             steps {
                 echo 'Building Docker Image: vle7-app...'
                 sh 'docker build -t vle7-app:latest .'
-                sh 'MINIKUBE_HOME=/home/ec2-user minikube image load vle7-app:latest'
+                sh 'sudo -u ec2-user MINIKUBE_HOME=/home/ec2-user minikube image load vle7-app:latest'
                 echo 'Docker build complete!'
             }
         }
@@ -21,8 +21,8 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying application to Minikube...'
-                sh 'KUBECONFIG=/home/ec2-user/.kube/config kubectl apply -f deployment.yaml'
-                sh 'KUBECONFIG=/home/ec2-user/.kube/config kubectl rollout restart deployment vle7-app'
+                sh 'sudo -u ec2-user KUBECONFIG=/home/ec2-user/.kube/config kubectl apply -f deployment.yaml'
+                sh 'sudo -u ec2-user KUBECONFIG=/home/ec2-user/.kube/config kubectl rollout restart deployment vle7-app'
                 echo 'Deployment applied successfully!'
             }
         }
