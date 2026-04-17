@@ -1,6 +1,11 @@
 pipeline {
     agent any
     
+    environment {
+        IMAGE_NAME = "vle7-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+    
     stages {
         stage('Checkout') {
             steps {
@@ -9,21 +14,30 @@ pipeline {
             }
         }
         
-        stage('Build & Test Docker Image') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Building Docker Image: vle7-app...'
-                sh 'docker build -t vle7-app:latest .'
-                sh 'sudo -u ec2-user /usr/bin/env MINIKUBE_HOME=/home/ec2-user /usr/local/bin/minikube image load vle7-app:latest'
-                echo 'Docker build complete!'
+                echo "Building Docker image ${IMAGE_NAME}:${IMAGE_TAG}..."
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+            }
+        }
+        
+        stage('Load Image Into Minikube') {
+            steps {
+                echo "Loading image ${IMAGE_NAME}:${IMAGE_TAG} into Minikube..."
+                sh 'sudo -u ec2-user /usr/bin/env MINIKUBE_HOME=/home/ec2-user /usr/local/bin/minikube image load ${IMAGE_NAME}:${IMAGE_TAG}'
             }
         }
         
         stage('Deploy to Kubernetes') {
             steps {
-                echo 'Deploying application to Minikube...'
+                echo 'Applying Kubernetes manifests...'
                 sh 'sudo -u ec2-user /usr/bin/env KUBECONFIG=/home/ec2-user/.kube/config /usr/local/bin/kubectl apply -f deployment.yaml'
-                sh 'sudo -u ec2-user /usr/bin/env KUBECONFIG=/home/ec2-user/.kube/config /usr/local/bin/kubectl rollout restart deployment vle7-app'
-                echo 'Deployment applied successfully!'
+                
+                echo "Updating deployment image to ${IMAGE_NAME}:${IMAGE_TAG}..."
+                sh 'sudo -u ec2-user /usr/bin/env KUBECONFIG=/home/ec2-user/.kube/config /usr/local/bin/kubectl set image deployment/vle7-app vle7-app=${IMAGE_NAME}:${IMAGE_TAG}'
+                
+                echo 'Waiting for rollout to finish...'
+                sh 'sudo -u ec2-user /usr/bin/env KUBECONFIG=/home/ec2-user/.kube/config /usr/local/bin/kubectl rollout status deployment/vle7-app'
             }
         }
     }
